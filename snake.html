@@ -13,64 +13,123 @@ of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE
 
 <html lang="en">
 <head>
-<title>Snake Game v0.1</title>
+<title>Snake Game v0.5</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script src="js/jquery.js"></script>
+<script src="js/jquery-2.1.3.min.js"></script>
 <script src="js/jwerty.js"></script>
 <script src="js/snake.js"></script>
 
 <style type="text/css">
-.popover {
-	width: 650px;
-	max-width: 800px;
-}
-#label-all {
-	width: 20%;
+div, p, body, input, button {
+	font-family: Arial;
+	font-size: 10pt;
 }
 </style>
 </head>
 <body>
+	<div>Welcome. Start game with start button or key 'g'. Left: 'a', Right: 'd'. Up: 'w', Down: 's', as usual.</div>
+	<div>Start game with start button or key 'g'. Restart with faster paste: '1'. Slower: '2'.</div>
 	<div>
 		<label for="width">Width</label>
-		<input id="width" type="range" min="20" max="40" step="2" value="40"></input>
+		<input id="width" type="range" min="20" max="50" step="2" value="40" list="width_ticks"></input>
+		<datalist id="width_ticks">
+			<option>20</option>
+			<option>30</option>
+			<option>40</option>
+			<option>50</option>
+		</datalist>		
 		<label for="height">Height</label>
-		<input id="height" type="range" min="10" max="20" step="2" value="40"></input>
+		<input id="height" type="range" min="10" max="70" step="2" value="20" list="height_ticks"></input>
+		<datalist id="height_ticks">
+			<option>10</option>
+			<option>30</option>
+			<option>50</option>
+			<option>70</option>
+		</datalist>		
 		<label for="speed">Speed</label>
-		<input id="speed" type="range" min="40" max="300" step="20" value="140"></input>
+		<input id="speed" type="range" min="10" max="310" step="20" value="100" list="speed_ticks"></input>
+		<datalist id="speed_ticks">
+			<option>10</option>
+			<option>110</option>
+			<option>210</option>
+			<option>310</option>
+		</datalist>		
 		<button id="btnStart">Start</button>
 	</div>
 
 	<canvas id="snakearea" width="620" height="420"></canvas>
-
 <script>
 var width = 40;
 var height = 20;
-var speed = 140;
+var speed = 100;
 var timerid = -1;
 
 var game = new Game("snakearea",width, height);
 
-jwerty.key('w', function () {
+function up() {
     game.delta_y = 1;
     game.delta_x = 0;
+}
+function down() {
+    game.delta_y = -1;
+    game.delta_x = 0;
+}
+function left() {
+    game.delta_y = 0;
+    game.delta_x = -1;
+}
+function right() {
+    game.delta_y = 0;
+    game.delta_x = 1;
+}
+
+$("snakearea").on("swipeleft",function(){
+	left();
+});
+$("snakearea").on("swiperight",function(){
+	right();
+});
+$("snakearea").on("tap",function(){
+	start();
+});
+
+jwerty.key('w', function () {
+	up();
 }, this, "body");
 
 jwerty.key('a', function () {
-    game.delta_x = -1;
-    game.delta_y = 0;
+	left();
 }, this, "body");
 
 jwerty.key('d', function () {
-    game.delta_x = 1;
-    game.delta_y = 0;
+	right();
 }, this, "body");
 
 jwerty.key('s', function () {
-    game.delta_y = -1;
-    game.delta_x = 0;
+	down();
 }, this, "body");
 
 jwerty.key('g', function () {
+	start();
+}, this, "body");
+
+jwerty.key('1', function () {
+	if( speed <= 10) {
+		// ignore
+	} else {
+		speed -= 20;
+		$('#speed').val(speed);
+	}
+	start();
+}, this, "body");
+
+jwerty.key('2', function () {
+	if( speed > 310) {
+		// ignore
+	} else {
+		speed += 20;
+		$('#speed').val(speed);
+	}
 	start();
 }, this, "body");
 

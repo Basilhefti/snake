@@ -89,19 +89,64 @@ function Motivation(score, sentence) {
     this.sentence = sentence;
 }
 
+// -- class Portal ------------------------------------------------------------
+// a portal
+function Portal(width) {
+    this.width = width;
+}
+
+// randomly select a new position for the portal ------------------------------
+Portal.prototype.position = function(gamewidth, y) {
+    this.x = Math.floor(Math.random() * gamewidth);
+    this.y = y;
+}
+
+// draw the portal ------------------------------------------------------------
+Portal.prototype.draw = function(board) {
+    board.drawPixel("#AA00AA", this.x, this.y);
+    for(var i = 1; i < this.width; i++) {
+        board.drawPixel("#AA00AA", this.x+1, this.y);
+    }
+}
+
+// true if in portal ----------------------------------------------------------
+Portal.prototype.inPortal = function(x,y) {
+    var res = false;
+    if( y == this.y ) {
+        if( x >= this.x && x < (this.x + this.width)) {
+            res = true;
+        }
+    }
+    return res;
+}
+
+
 // -- class Game --------------------------------------------------------------
 // game is in game coordinates (cartesian, (0,0) in lower left corner)
 function Game(canvas_name, width, height) {
+    // my board
     this.board = new Board(canvas_name, width, height, 10);
+
+    // game dimensions
     this.width = width;
     this.height = height;
+
+    // food position
     this.food_x = 0;
     this.food_y = 0;
-    this.positionFood();
+    this.positionFood(); // place first food
+
+    // current vector
     this.delta_x = 1;
     this.delta_y = 0;
+
+    // game status
     this.gameover = 0;
+
+    // the snake
     this.snake = new Snake(this);
+
+    // motivations
     this.motivations = [];
     this.motivations.push(new Motivation(2, "Just started"));
     this.motivations.push(new Motivation(3, "Keep it up"));
@@ -110,7 +155,22 @@ function Game(canvas_name, width, height) {
     this.motivations.push(new Motivation(6, "Hey :)"));
     this.motivations.push(new Motivation(7, "Just one more"));
     this.motivations.push(new Motivation(8, "Wow! Have been training hard lately?"));
+    this.motivations.push(new Motivation(8, "I feel better now ... :)"));
+    this.motivations.push(new Motivation(8, "You are beautiful!"));
+    this.motivations.push(new Motivation(8, "Awesome."));
+    this.motivations.push(new Motivation(8, "Loving it."));
+    this.motivations.push(new Motivation(8, "The more you train, the better you get."));
+    this.motivations.push(new Motivation(8, "speechless"));
+    this.motivations.push(new Motivation(8, "Go Go Go"));
     this.motivation = "";
+
+    var p = new Portal(2);
+    p.position(this.width, 0);
+    this.portal_1 = p;
+
+    p = new Portal(2);
+    p.position(this.width, this.height);
+    this.portal_2 = p;
 }
 
 // randomly select a new position for the food --------------------------------
@@ -136,6 +196,8 @@ Game.prototype.step = function() {
         // console.log("Game.step");
         this.drawBoard("#0000FF");
         this.drawFood("#FF0000");
+        this.portal_1.draw(this.board);
+        this.portal_2.draw(this.board);
         this.snake.draw("#00FF00");
         this.snake.move(this.delta_x, this.delta_y);
         this.board.text("#000000", 1, this.height-2, "Length: "+ this.snake.pos_x.length);
@@ -174,16 +236,36 @@ function Snake(game) {
     this.lifes = 1; // number of lifes
     x = Math.floor(this.game.width/2); // start in the middle
     y = Math.floor(this.game.height/2);
-    this.pos_x = [x, x+1]; // snake is represented by array of x,y positions
-    this.pos_y = [y, y];
+    this.pos_x = [x, x+1, x+2]; // snake is represented by array of x,y positions
+    this.pos_y = [y, y, y];
+    this.inportal = 0;
 }
 
 // move snake to next position (speed dictated by Game.step()) ----------------
 Snake.prototype.move = function(deltax, deltay) {
 
+    var head_x = this.pos_x[this.pos_x.length-1];
+    var head_y = this.pos_y[this.pos_y.length-1];
+
     // calculate new position of head
-    var new_x = this.pos_x[this.pos_x.length-1] + deltax;
-    var new_y = this.pos_y[this.pos_y.length-1] + deltay;
+    var new_x = head_x + deltax;
+    var new_y = head_y + deltay;
+
+    if( this.game.delta_y != 0 && this.inportal == 0) {
+        if( this.game.portal_1.inPortal(head_x, head_y) ) {
+            // console.log("in portal 1: " + head_x + " " + head_y);
+            new_x = this.game.portal_2.x;
+            new_y = this.game.portal_2.y;
+            this.inportal = 1;
+        } else if( this.game.portal_2.inPortal(head_x, head_y) ) {
+            // console.log("in portal 2: " + head_x + " " + head_y);
+            new_x = this.game.portal_1.x;
+            new_y = this.game.portal_1.y;
+            this.inportal = 1;
+        }
+    } else {
+        this.inportal = 0;
+    }
 
     // check against walls
     if( this.lifes > 0 && new_x > this.game.width || new_x < 0) {
