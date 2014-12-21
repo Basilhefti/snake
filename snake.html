@@ -1,0 +1,107 @@
+<html>
+<!--
+Copyright (C) 2014-2015 by Simon and Basil Hefti. All rights reserved.
+The copyright to the computer program(s) herein is the property of
+Simon and Basil Hefti, Switzerland. The program(s) may be used and/or copied
+only with the written permission of Simon and Basil Hefti or in accordance
+with the terms and conditions stipulated in the agreement/contract
+under which the program(s) have been supplied.
+
+This work is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied, including, without limitation, any warranties or conditions
+of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. -->
+
+<html lang="en">
+<head>
+<title>Snake Game v0.1</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="js/jquery.js"></script>
+<script src="js/jwerty.js"></script>
+<script src="js/snake.js"></script>
+
+<style type="text/css">
+.popover {
+	width: 650px;
+	max-width: 800px;
+}
+#label-all {
+	width: 20%;
+}
+</style>
+</head>
+<body>
+	<div>
+		<label for="width">Width</label>
+		<input id="width" type="range" min="20" max="40" step="2" value="40"></input>
+		<label for="height">Height</label>
+		<input id="height" type="range" min="10" max="20" step="2" value="40"></input>
+		<label for="speed">Speed</label>
+		<input id="speed" type="range" min="40" max="300" step="20" value="140"></input>
+		<button id="btnStart">Start</button>
+	</div>
+
+	<canvas id="snakearea" width="620" height="420"></canvas>
+
+<script>
+var width = 40;
+var height = 20;
+var speed = 140;
+var timerid = -1;
+
+var game = new Game("snakearea",width, height);
+
+jwerty.key('w', function () {
+    game.delta_y = 1;
+    game.delta_x = 0;
+}, this, "body");
+
+jwerty.key('a', function () {
+    game.delta_x = -1;
+    game.delta_y = 0;
+}, this, "body");
+
+jwerty.key('d', function () {
+    game.delta_x = 1;
+    game.delta_y = 0;
+}, this, "body");
+
+jwerty.key('s', function () {
+    game.delta_y = -1;
+    game.delta_x = 0;
+}, this, "body");
+
+jwerty.key('g', function () {
+	start();
+}, this, "body");
+
+function step() {
+    game.step()
+};
+function start() {
+	if( -1 != timerid ) {
+		window.clearInterval(timerid);
+	}
+	game = new Game("snakearea",width, height);
+	timerid = window.setInterval(step,speed);
+	// console.log("start: " + timerid + " " + speed);
+}
+
+$('#width').on('change', function(e) {
+	width = $(this).val();
+});
+
+$('#height').on('change', function(e) {
+	height = $(this).val();
+});
+
+$('#speed').on('change', function(e) {
+	speed = $(this).val();
+});
+
+$('#btnStart').on('click', function(e) {
+	start();
+});
+</script>
+<body>
+</body>	
+</html>
