@@ -82,13 +82,6 @@ Board.prototype.text = function(color, x, y, text) {
     ctx.fillText(text, x1, y1);
 }
 
-// -- class Motivation --------------------------------------------------------
-// motivations
-function Motivation(eventtype, sentence) {
-    this.eventtype = eventtype;
-    this.sentence = sentence;
-}
-
 // -- class Portal ------------------------------------------------------------
 // a portal
 function Portal(width) {
@@ -123,9 +116,9 @@ Portal.prototype.inPortal = function(x,y) {
 
 // -- class Game --------------------------------------------------------------
 // game is in game coordinates (cartesian, (0,0) in lower left corner)
-function Game(canvas_name, width, height) {
+function Game(canvas_name, width, height, pix_size) {
     // my board
-    this.board = new Board(canvas_name, width, height, 10);
+    this.board = new Board(canvas_name, width, height, pix_size);
 
     // game dimensions
     this.width = width;
@@ -147,26 +140,7 @@ function Game(canvas_name, width, height) {
     this.snake = new Snake(this);
 
     // motivations
-    this.motivations = [];
-    this.motivations.push(new Motivation("start", "Just started"));
-    this.motivations.push(new Motivation("hungry", "Keep it up"));
-    this.motivations.push(new Motivation("hungry", "Don't disturb. I am converting O2 into CO2"));
-    this.motivations.push(new Motivation("normal", "snake is like a prime number: indivisible"));
-    this.motivations.push(new Motivation("food", "Hey :)"));
-    this.motivations.push(new Motivation("hungry", "Just one more"));
-    this.motivations.push(new Motivation("impressive", "Wow! Have been training hard lately?"));
-    this.motivations.push(new Motivation("hungry", "I feel better now ... :)"));
-    this.motivations.push(new Motivation("food", "You are beautiful!"));
-    this.motivations.push(new Motivation("food", "Awesome."));
-    this.motivations.push(new Motivation("food", "Loving it."));
-    this.motivations.push(new Motivation("food", "mampf."));
-    this.motivations.push(new Motivation("hungry", "The more you train, the better you get."));
-    this.motivations.push(new Motivation("food", "Speechless..."));
-    this.motivations.push(new Motivation("hungry", "Go Go Go"));
-    this.motivations.push(new Motivation("hungry", "need more food."));
-    this.motivations.push(new Motivation("portal", "Woosh"));
-    this.motivations.push(new Motivation("portal", "Schwups"));
-    this.motivations.push(new Motivation("food", "Delicious."));
+    this.motivations = new Motivations();
     this.motivation = "";
 
     var p = new Portal(2);
@@ -213,19 +187,7 @@ Game.prototype.step = function() {
 // change motivational text ---------------------------------------------------
 Game.prototype.newMotivation = function(eventtype) {
     if( Math.random() > 0.2) {
-        if( "any" == eventtype) {
-            var idx = Math.floor(Math.random() * this.motivations.length);
-            this.motivation = this.motivations[idx].sentence;
-        } else {
-            for(var i = 0; i < this.motivations.length; i++) {
-                if( this.motivations[i].eventtype == eventtype) {
-                    this.motivation = this.motivations[i].sentence;
-                    if( Math.random() > 0.95) {
-                        break;
-                    }
-                }
-            }
-        }
+        this.motivation = this.motivations.getText(eventtype);
     }
 }
 
@@ -325,7 +287,7 @@ Snake.prototype.move = function(deltax, deltay) {
         this.growing = 0; // if growing: keep tail
     }
 
-    if( this.stepsSinceLastEvent > 25) {
+    if( this.stepsSinceLastEvent > 30) {
         this.game.newMotivation("hungry");
         this.stepsSinceLastEvent = 0;
     }
