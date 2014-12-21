@@ -59,6 +59,7 @@ div, p, body, input, button {
 
 	<canvas id="snakearea" width="620" height="420"></canvas>
 <script>
+
 var width = 40;
 var height = 20;
 var speed = 100;
@@ -113,6 +114,10 @@ jwerty.key('g', function () {
 	start();
 }, this, "body");
 
+jwerty.key('space', function () {
+	start();
+}, this, "body");
+
 jwerty.key('1', function () {
 	if( speed <= 10) {
 		// ignore
@@ -146,15 +151,15 @@ function start() {
 }
 
 $('#width').on('change', function(e) {
-	width = $(this).val();
+	width = parseInt($(this).val());
 });
 
 $('#height').on('change', function(e) {
-	height = $(this).val();
+	height = parseInt($(this).val());
 });
 
 $('#speed').on('change', function(e) {
-	speed = $(this).val();
+	speed = parseInt($(this).val());
 });
 
 $('#btnStart').on('click', function(e) {

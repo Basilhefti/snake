@@ -84,8 +84,8 @@ Board.prototype.text = function(color, x, y, text) {
 
 // -- class Motivation --------------------------------------------------------
 // motivations
-function Motivation(score, sentence) {
-    this.score = score;
+function Motivation(eventtype, sentence) {
+    this.eventtype = eventtype;
     this.sentence = sentence;
 }
 
@@ -148,20 +148,25 @@ function Game(canvas_name, width, height) {
 
     // motivations
     this.motivations = [];
-    this.motivations.push(new Motivation(2, "Just started"));
-    this.motivations.push(new Motivation(3, "Keep it up"));
-    this.motivations.push(new Motivation(4, "Don't disturb. I am converting O2 into CO2"));
-    this.motivations.push(new Motivation(5, "snake is like a prime number: indivisible"));
-    this.motivations.push(new Motivation(6, "Hey :)"));
-    this.motivations.push(new Motivation(7, "Just one more"));
-    this.motivations.push(new Motivation(8, "Wow! Have been training hard lately?"));
-    this.motivations.push(new Motivation(8, "I feel better now ... :)"));
-    this.motivations.push(new Motivation(8, "You are beautiful!"));
-    this.motivations.push(new Motivation(8, "Awesome."));
-    this.motivations.push(new Motivation(8, "Loving it."));
-    this.motivations.push(new Motivation(8, "The more you train, the better you get."));
-    this.motivations.push(new Motivation(8, "speechless"));
-    this.motivations.push(new Motivation(8, "Go Go Go"));
+    this.motivations.push(new Motivation("start", "Just started"));
+    this.motivations.push(new Motivation("hungry", "Keep it up"));
+    this.motivations.push(new Motivation("hungry", "Don't disturb. I am converting O2 into CO2"));
+    this.motivations.push(new Motivation("normal", "snake is like a prime number: indivisible"));
+    this.motivations.push(new Motivation("food", "Hey :)"));
+    this.motivations.push(new Motivation("hungry", "Just one more"));
+    this.motivations.push(new Motivation("impressive", "Wow! Have been training hard lately?"));
+    this.motivations.push(new Motivation("hungry", "I feel better now ... :)"));
+    this.motivations.push(new Motivation("food", "You are beautiful!"));
+    this.motivations.push(new Motivation("food", "Awesome."));
+    this.motivations.push(new Motivation("food", "Loving it."));
+    this.motivations.push(new Motivation("food", "mampf."));
+    this.motivations.push(new Motivation("hungry", "The more you train, the better you get."));
+    this.motivations.push(new Motivation("food", "Speechless..."));
+    this.motivations.push(new Motivation("hungry", "Go Go Go"));
+    this.motivations.push(new Motivation("hungry", "need more food."));
+    this.motivations.push(new Motivation("portal", "Woosh"));
+    this.motivations.push(new Motivation("portal", "Schwups"));
+    this.motivations.push(new Motivation("food", "Delicious."));
     this.motivation = "";
 
     var p = new Portal(2);
@@ -206,10 +211,21 @@ Game.prototype.step = function() {
 }
 
 // change motivational text ---------------------------------------------------
-Game.prototype.newMotivation = function() {
+Game.prototype.newMotivation = function(eventtype) {
     if( Math.random() > 0.2) {
-        var idx = Math.floor(Math.random() * this.motivations.length);
-        this.motivation = this.motivations[idx].sentence;
+        if( "any" == eventtype) {
+            var idx = Math.floor(Math.random() * this.motivations.length);
+            this.motivation = this.motivations[idx].sentence;
+        } else {
+            for(var i = 0; i < this.motivations.length; i++) {
+                if( this.motivations[i].eventtype == eventtype) {
+                    this.motivation = this.motivations[i].sentence;
+                    if( Math.random() > 0.95) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -217,15 +233,7 @@ Game.prototype.newMotivation = function() {
 Game.prototype.stop = function() {
     this.gameover = 1;
     this.board.text("#FF0000", 1, this.height-3, "Game Over");
-    if( this.snake.pos_x.length < 5 ) {
-        this.board.text("#000000", 1, this.height-4, "Try again.");
-    } else if ( this.snake.pos_x.length > 30 ) {
-        this.board.text("#000000", 1, this.height-4, "Hey :)");
-    }  else if ( this.snake.pos_x.length > 20 ) {
-        this.board.text("#000000", 1, this.height-4, "Wow. Training hard?");
-    }  else if ( this.snake.pos_x.length > 10 ) {
-        this.board.text("#000000", 1, this.height-4, "Right on track.");
-    }
+    this.newMotivation("any");
 }
 
 
@@ -239,6 +247,10 @@ function Snake(game) {
     this.pos_x = [x, x+1, x+2]; // snake is represented by array of x,y positions
     this.pos_y = [y, y, y];
     this.inportal = 0;
+
+    // event handling
+    this.eventtype = 'normal';
+    this.stepsSinceLastEvent = 0;
 }
 
 // move snake to next position (speed dictated by Game.step()) ----------------
@@ -247,25 +259,34 @@ Snake.prototype.move = function(deltax, deltay) {
     var head_x = this.pos_x[this.pos_x.length-1];
     var head_y = this.pos_y[this.pos_y.length-1];
 
+    // console.log("head x, y: " + head_x + " " + head_y);
+
     // calculate new position of head
     var new_x = head_x + deltax;
     var new_y = head_y + deltay;
 
+    // console.log("new x, y (bef portal): " + new_x + " " + new_y);
     if( this.game.delta_y != 0 && this.inportal == 0) {
         if( this.game.portal_1.inPortal(head_x, head_y) ) {
             // console.log("in portal 1: " + head_x + " " + head_y);
             new_x = this.game.portal_2.x;
             new_y = this.game.portal_2.y;
             this.inportal = 1;
+            this.game.newMotivation("portal");
+            this.stepsSinceLastEvent = 0;
         } else if( this.game.portal_2.inPortal(head_x, head_y) ) {
             // console.log("in portal 2: " + head_x + " " + head_y);
             new_x = this.game.portal_1.x;
             new_y = this.game.portal_1.y;
             this.inportal = 1;
+            this.game.newMotivation("portal");
+            this.stepsSinceLastEvent = 0;
         }
     } else {
         this.inportal = 0;
     }
+
+    // console.log("new x, y: " + new_x + " " + new_y);
 
     // check against walls
     if( this.lifes > 0 && new_x > this.game.width || new_x < 0) {
@@ -293,7 +314,8 @@ Snake.prototype.move = function(deltax, deltay) {
     if( new_x == this.game.food_x && new_y == this.game.food_y) {
         this.growing = 1;
         this.game.positionFood(); // add new food
-        this.game.newMotivation();
+        this.game.newMotivation("food");
+        this.stepsSinceLastEvent = 0;
     }
 
     if( 0 == this.growing) {
@@ -303,10 +325,15 @@ Snake.prototype.move = function(deltax, deltay) {
         this.growing = 0; // if growing: keep tail
     }
 
+    if( this.stepsSinceLastEvent > 25) {
+        this.game.newMotivation("hungry");
+        this.stepsSinceLastEvent = 0;
+    }
 
     this.pos_x.push(new_x); // add new position of head
     this.pos_y.push(new_y);
 
+    this.stepsSinceLastEvent++;
 };
 
 // show snape at location -----------------------------------------------------
