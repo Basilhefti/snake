@@ -64,10 +64,8 @@ div, p, body, input, button, .ctrl {
 	<canvas id="snakearea" width="410" height="210"></canvas>
 
 	<div id="game_ctrl">
-		<button class="ctrl" id="btnUp">Up</button>
-		<button class="ctrl" id="btnLeft">Left</button>
-		<button class="ctrl" id="btnRight">Right</button>
-		<button class="ctrl" id="btnDown">Down</button>
+		<button class="ctrl" id="btnLeft">Turn Left</button>
+		<button class="ctrl" id="btnRight">Turn Right</button>
 	</div>
 <script>
 
@@ -79,31 +77,33 @@ var timerid = -1;
 var game = new Game("snakearea",width, height, 10);
 
 function up() {
-    game.delta_y = 1;
-    game.delta_x = 0;
+	game.up();
 }
 function down() {
-    game.delta_y = -1;
-    game.delta_x = 0;
+	game.down();
 }
 function left() {
-    game.delta_y = 0;
-    game.delta_x = -1;
+	game.left();
 }
 function right() {
-    game.delta_y = 0;
-    game.delta_x = 1;
+	game.right();
 }
 
-$("snakearea").on("swipeleft",function(){
-	left();
-});
-$("snakearea").on("swiperight",function(){
-	right();
-});
-$("snakearea").on("tap",function(){
-	start();
-});
+function turnRight() {
+	game.turnRight();
+}
+
+function turnLeft() {
+	game.turnLeft();
+}
+
+jwerty.key('p', function () {
+	turnRight();
+}, this, "body");
+
+jwerty.key('o', function () {
+	turnLeft();
+}, this, "body");
 
 jwerty.key('w', function () {
 	up();
@@ -158,7 +158,6 @@ function start() {
 	}
 	game = new Game("snakearea",width, height, 10);
 	timerid = window.setInterval(step,speed);
-	// console.log("start: " + timerid + " " + speed);
 }
 
 $('#width').on('change', function(e) {
@@ -188,16 +187,10 @@ $('#btnStart').on('click', function(e) {
 });
 
 $('#btnLeft').on('click', function(e) {
-	left();
+	turnLeft();
 });
 $('#btnRight').on('click', function(e) {
-	right();
-});
-$('#btnUp').on('click', function(e) {
-	up();
-});
-$('#btnDown').on('click', function(e) {
-	down();
+	turnRight();
 });
 
 </script>
