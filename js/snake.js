@@ -506,7 +506,6 @@ Snake.prototype.move = function(deltax, deltay) {
 
     if( "food" == this.lastEvent && 5 == this.stepsSinceLastEvent && Math.random() > 0.75) {
         this.game.newMotivation("digesting");
-        this.game.lsd = 1;
     }
 
     this.pos_x.push(new_x); // add new position of head
